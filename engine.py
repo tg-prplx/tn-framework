@@ -5,7 +5,6 @@ import numpy as np
 from rich.console import Console
 from rich.panel import Panel
 from json import load, dump, JSONDecodeError
-from getpass import getpass
 from rich.box import SQUARE
 import fcntl
 
@@ -75,6 +74,10 @@ class EngineBase:
         self.theme_manager.load_theme("main.theme")
         self.tab_height = 3
 
+    def exit(self):
+        self.console.clear()
+        exit()
+
 class RenderEngine(EngineBase):
     def get_scene(self):
         return {
@@ -140,7 +143,6 @@ class RenderEngine(EngineBase):
         self.console.clear()
         self.render_scene()
         self.render_tab()
-        getpass(prompt='')
 
 class LogicEngine(RenderEngine):
     def next_scene(self):
@@ -174,4 +176,5 @@ class LogicEngine(RenderEngine):
                 with open(os.path.join("scenes", i), "r", encoding="utf-8") as f:
                     self.scenes.append(load(f))
         self.scenes.sort(key=lambda x: x["id"])
+        self.load_scene(self.scenes[0])
         return self.scenes
