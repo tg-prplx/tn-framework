@@ -4,16 +4,11 @@ import cv2
 import numpy as np
 from rich.console import Console
 from rich.panel import Panel
-from rich.align import Align
-from rich.text import Text
 from json import load
 from getpass import getpass
 from rich.box import SQUARE
 
-
 SYMBOLS = np.array(list("▒▓▓█"))
-
-
 
 class ThemeManager:
     def __init__(self) -> None:
@@ -29,7 +24,7 @@ class ThemeManager:
     def get_theme(self):
         return self.theme
 
-class Engine:
+class EngineBase:
     def __init__(self) -> None:
         self.console = Console()
         self.w, self.h = self.console.size
@@ -41,15 +36,7 @@ class Engine:
         self.theme_manager.load_theme("main.theme")
         self.tab_height = 3
 
-class RenderEngine(Engine):
-    def load_scene(self, scene):
-        with open(scene, "r", encoding="utf-8") as f:
-            loaded_scene = load(f)
-        self.id = loaded_scene["id"]
-        self.text = loaded_scene["text"]
-        self.background = loaded_scene["background"]
-        self.person = loaded_scene["person"]
-
+class RenderEngine(EngineBase):
     def get_scene(self):
         return {
             "id": self.id,
@@ -115,3 +102,24 @@ class RenderEngine(Engine):
         self.render_scene()
         self.render_tab()
         getpass(prompt='')
+
+class LogicEngine(RenderEngine):
+    def load_scene(self, scene: dict):
+        self.id = scene["id"]
+        self.text = scene["text"]
+        self.background = scene["background"]
+        self.person = scene["person"]
+
+    def register_scenes(self):
+        self.scenes = []
+        for i in os.listdir("scenes"):
+            if i.endswith(".json"):
+                with open(os.path.join("scenes", i), "r", encoding="utf-8") as f:
+                    self.scenes.append(load(f))
+        self.scenes.sort(key=lambda x: x["id"])
+        return self.scenes
+    
+    def start(self):
+        for i in self.scenes:
+            self.load_scene(i)
+            self.render()

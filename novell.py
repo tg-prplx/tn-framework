@@ -1,6 +1,5 @@
-from engine import RenderEngine
+from engine import LogicEngine, RenderEngine
 
-eng = RenderEngine()
-
-eng.load_scene("scenes/scene1.json")
-eng.render()
+eng = LogicEngine()
+eng.register_scenes()
+eng.start()
