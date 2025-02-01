@@ -1,0 +1,17 @@
+{
+    "border": {
+        "top": "─",
+        "bottom": "─",
+        "left": "│",
+        "right": "│"
+    },
+    "corners": {
+        "top_left": "╭",
+        "top_right": "╮",
+        "bottom_left": "╰",
+        "bottom_right": "╯"
+    },
+    "background": {
+        "color": "black"
+    }
+}
