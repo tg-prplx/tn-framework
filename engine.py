@@ -4,11 +4,50 @@ import cv2
 import numpy as np
 from rich.console import Console
 from rich.panel import Panel
-from json import load
+from json import load, dump, JSONDecodeError
 from getpass import getpass
 from rich.box import SQUARE
+import fcntl
 
 SYMBOLS = np.array(list("▒▓▓█"))
+
+class ChoicesStorage:
+    FILE_PATH = "choices.json"
+
+    def __init__(self) -> None:
+        self.choices = self.__load()
+
+    def __load(self):
+        if not os.path.exists(self.FILE_PATH):
+            return []
+
+        try:
+            with open(self.FILE_PATH, "r", encoding="utf-8") as f:
+                fcntl.flock(f, fcntl.LOCK_SH)  # Блокировка на чтение (Linux/macOS)
+                data = load(f)
+                fcntl.flock(f, fcntl.LOCK_UN)
+                return data
+        except (JSONDecodeError, FileNotFoundError):
+            return []
+
+    def __save(self):
+        with open(self.FILE_PATH, "w", encoding="utf-8") as f:
+            fcntl.flock(f, fcntl.LOCK_EX)  # Блокировка на запись (Linux/macOS)
+            dump(self.choices, f, indent=2)
+            fcntl.flock(f, fcntl.LOCK_UN)
+
+    def add_choice(self, choice: dict[str, int]):
+        self.choices.append(choice)
+        self.__save()
+
+    def get_choices(self):
+        return self.choices
+
+    def clear(self):
+        self.choices.clear()
+        self.__save()
+        os.remove(self.FILE_PATH)
+
 
 class ThemeManager:
     def __init__(self) -> None:
@@ -104,6 +143,24 @@ class RenderEngine(EngineBase):
         getpass(prompt='')
 
 class LogicEngine(RenderEngine):
+    def next_scene(self):
+        self.id += 1
+        if self.id > len(self.scenes):
+            self.id = len(self.scenes)
+    
+    def prev_scene(self):
+        self.id -= 1
+        if self.id < 1:
+            self.id = 1
+    
+    def custom_scene(self, id: int):
+        self.id = id
+        if self.id < 1:
+            self.id = 1
+        elif self.id > len(self.scenes):
+            self.id = len(self.scenes)
+        self.load_scene(self.scenes[self.id - 1])
+
     def load_scene(self, scene: dict):
         self.id = scene["id"]
         self.text = scene["text"]
@@ -118,8 +175,3 @@ class LogicEngine(RenderEngine):
                     self.scenes.append(load(f))
         self.scenes.sort(key=lambda x: x["id"])
         return self.scenes
-    
-    def start(self):
-        for i in self.scenes:
-            self.load_scene(i)
-            self.render()
