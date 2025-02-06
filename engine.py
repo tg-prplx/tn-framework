@@ -10,19 +10,22 @@ from lupa import LuaRuntime, lua_type
 from getpass import getpass
 import copy
 
+
 SYMBOLS = np.array(list("▒▓▓█"))
 
+
 def lua_table_to_dict(lua_table):
-    if lua_type(lua_table) != 'table':
-        return lua_table
+    if lua_type(lua_table) != "table":
+        return lua_table if isinstance(lua_table, (str, int, float, bool, list, dict)) else None
 
     result = {}
     for key, value in lua_table.items():
-        if lua_type(value) == 'table':
-            result[key] = lua_table_to_dict(value)
-        else:
-            result[key] = value
+        if lua_type(value) == "function":
+            continue
+        result[str(key)] = lua_table_to_dict(value)
+
     return result
+
 
 
 class ThemeManager:
@@ -39,6 +42,7 @@ class ThemeManager:
     def get_theme(self):
         return self.theme
 
+
 class EngineBase:
     def __init__(self) -> None:
         self.console = Console()
@@ -51,10 +55,14 @@ class EngineBase:
         self.theme_manager.load_theme("main.theme")
         self.tab_height = 3
         self.lua = LuaRuntime(unpack_returned_tuples=True)
+        self.scenes = []
+        self.lua_env = self.lua.globals()
+        self.choices = {}
 
     def exit(self):
         self.console.clear()
         exit()
+
 
 class RenderEngine(EngineBase):
     def get_scene(self):
@@ -62,7 +70,7 @@ class RenderEngine(EngineBase):
             "id": self.id,
             "text": self.text,
             "background": self.background,
-            "person": self.person
+            "person": self.person,
         }
 
     def render_tab(self):
@@ -102,7 +110,11 @@ class RenderEngine(EngineBase):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         term_width = min(self.w, image.shape[1])
         term_height = min(self.h, image.shape[0])
-        resized_image = cv2.resize(image, (term_width, term_height - self.tab_height), interpolation=cv2.INTER_NEAREST)
+        resized_image = cv2.resize(
+            image,
+            (term_width, term_height - self.tab_height),
+            interpolation=cv2.INTER_NEAREST,
+        )
 
         gray_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2GRAY)
         indices = (gray_image * (len(SYMBOLS) / 256)).astype(np.int32)
@@ -110,8 +122,10 @@ class RenderEngine(EngineBase):
         symbols = SYMBOLS[indices]
 
         output = [
-            "".join(f"[#{r:02x}{g:02x}{b:02x} on #000000]{s}[/]"
-                    for (r, g, b), s in zip(row_pixels, row_symbols))
+            "".join(
+                f"[#{r:02x}{g:02x}{b:02x} on #000000]{s}[/]"
+                for (r, g, b), s in zip(row_pixels, row_symbols)
+            )
             for row_pixels, row_symbols in zip(resized_image, symbols)
         ]
 
@@ -122,13 +136,12 @@ class RenderEngine(EngineBase):
         self.render_scene()
         self.render_tab()
 
+
 class LogicEngine(RenderEngine):
     def __init__(self):
         super().__init__()
-        self.scenes = []
-        self.lua_env = self.lua.globals()
-        self.choices = {}
-
+        self.lua.globals().engine = self
+        self.await_input = True
 
     def next_scene(self):
         if self.id < len(self.scenes):
@@ -149,20 +162,23 @@ class LogicEngine(RenderEngine):
                 if not isinstance(choice, dict):
                     self.choices[i] = {}
 
-            lua_choices = copy.deepcopy(self.choices)
+            if isinstance(self.choices, dict):
+                self.choices = {
+                    int(k): v for k, v in self.choices.items() if isinstance(k, (int, str)) and str(k).isdigit()
+                }
 
             try:
-                lua_table_choices = self.lua.table_from([dict(choice) for choice in lua_choices])
+                lua_choices = self.lua.table_from(self.choices)
             except TypeError as e:
                 print(f"[ERROR] Ошибка при преобразовании choices: {e}")
-                lua_table_choices = self.lua.table_from([])
+                lua_choices = self.lua.table_from([])
 
             scene_data = {
                 "id": self.id,
                 "text": self.text,
                 "background": self.background,
                 "person": self.person,
-                "choices": lua_table_choices,
+                "choices": lua_choices,
             }
 
             lua_function = self.lua_env[lua_function_name]
@@ -173,7 +189,7 @@ class LogicEngine(RenderEngine):
                 self.person = new_scene.get("person", self.person)
                 self.background = new_scene.get("background", self.background)
                 self.choices = lua_table_to_dict(new_scene.get("choices", self.choices))
-            
+
             if lua_function_name == "post_scene":
                 self.lua_env.post_scene = None
 
@@ -181,7 +197,7 @@ class LogicEngine(RenderEngine):
         self.id -= 1
         if self.id < 1:
             self.id = 1
-    
+
     def custom_scene(self, id: int):
         self.id = id
         if self.id < 1:
@@ -190,12 +206,12 @@ class LogicEngine(RenderEngine):
             self.id = len(self.scenes)
         self.load_scene(self.scenes[self.id - 1])
 
-    def load_scene(self, scene: dict):
+    def load_scene(self, scene: dict, execute=True):
         self.id = scene["id"]
         self.text = scene["text"]
         self.background = scene["background"]
         self.person = scene["person"]
-        if "script" in scene and os.path.exists(scene["script"]):
+        if "script" in scene and os.path.exists(scene["script"]) and execute:
             with open(scene["script"], "r", encoding="utf-8") as f:
                 lua_code = f.read()
             self.lua.execute(lua_code)
@@ -210,13 +226,57 @@ class LogicEngine(RenderEngine):
         self.load_scene(self.scenes[0])
         return self.scenes
 
+    def save_game(self, filename="save.json"):
+        if self.choices == {}:
+            self.choices = self.lua.table_from({})
+
+        save_data = {
+            "id": self.id,
+            "text": self.text,
+            "background": self.background,
+            "person": self.person,
+            "choices": lua_table_to_dict(self.choices),
+        }
+        with open(filename, "w", encoding="utf-8") as f:
+            dump(save_data, f, indent=4)
+
+    def load_game(self, filename="save.json"):
+        try:
+            with open(filename, "r", encoding="utf-8") as f:
+                save_data = load(f)
+
+            self.id = save_data["id"]
+            self.text = save_data["text"]
+            self.background = save_data["background"]
+            self.person = save_data["person"]
+            if isinstance(save_data["choices"], dict):
+                converted_choices = {
+                    int(k): v for k, v in save_data["choices"].items() if k.isdigit()
+                }
+                self.choices = self.lua.table_from(converted_choices)
+            else:
+                self.choices = self.lua.table_from([])
+
+            self.load_scene(self.scenes[self.id - 1])
+
+        except (FileNotFoundError, JSONDecodeError) as e:
+            print(f"Ошибка загрузки сохранения: {e}")
+            self.choices = {}
+
     def run(self):
         self.register_scenes()
+        if os.path.exists("save.json"):
+            self.load_game()
+
         for _ in range(len(self.scenes)):
+            self.save_game()
             self.apply_lua_logic()
             self.render()
             self.apply_lua_logic(lua_function_name="post_scene")
-            getpass(prompt='')
+
+            if self.await_input:
+                getpass(prompt="")
+            else:
+                self.await_input = True
+
             self.next_scene()
-        
-        print("the end")

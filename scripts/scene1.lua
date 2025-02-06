@@ -9,5 +9,6 @@ function post_scene(scene)
     scene.choices = {}
   end
   table.insert(scene.choices, { picked_path = tonumber(io.read()) })
+  engine.await_input = false
   return scene
 end
