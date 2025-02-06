@@ -2,5 +2,6 @@
     "id": 1,
     "text": "I'm gentle open the door.",
     "person": "You",
-    "background": "scenes/ani.jpg"
+    "background": "images/nah.webp",
+    "script": "scripts/scene1.lua"
 }

@@ -6,46 +6,23 @@ from rich.console import Console
 from rich.panel import Panel
 from json import load, dump, JSONDecodeError
 from rich.box import SQUARE
-import fcntl
+from lupa import LuaRuntime, lua_type
+from getpass import getpass
+import copy
 
 SYMBOLS = np.array(list("▒▓▓█"))
 
-class ChoicesStorage:
-    FILE_PATH = "choices.json"
+def lua_table_to_dict(lua_table):
+    if lua_type(lua_table) != 'table':
+        return lua_table
 
-    def __init__(self) -> None:
-        self.choices = self.__load()
-
-    def __load(self):
-        if not os.path.exists(self.FILE_PATH):
-            return []
-
-        try:
-            with open(self.FILE_PATH, "r", encoding="utf-8") as f:
-                fcntl.flock(f, fcntl.LOCK_SH)  # Блокировка на чтение (Linux/macOS)
-                data = load(f)
-                fcntl.flock(f, fcntl.LOCK_UN)
-                return data
-        except (JSONDecodeError, FileNotFoundError):
-            return []
-
-    def __save(self):
-        with open(self.FILE_PATH, "w", encoding="utf-8") as f:
-            fcntl.flock(f, fcntl.LOCK_EX)  # Блокировка на запись (Linux/macOS)
-            dump(self.choices, f, indent=2)
-            fcntl.flock(f, fcntl.LOCK_UN)
-
-    def add_choice(self, choice: dict[str, int]):
-        self.choices.append(choice)
-        self.__save()
-
-    def get_choices(self):
-        return self.choices
-
-    def clear(self):
-        self.choices.clear()
-        self.__save()
-        os.remove(self.FILE_PATH)
+    result = {}
+    for key, value in lua_table.items():
+        if lua_type(value) == 'table':
+            result[key] = lua_table_to_dict(value)
+        else:
+            result[key] = value
+    return result
 
 
 class ThemeManager:
@@ -73,6 +50,7 @@ class EngineBase:
         self.person: str = ""
         self.theme_manager.load_theme("main.theme")
         self.tab_height = 3
+        self.lua = LuaRuntime(unpack_returned_tuples=True)
 
     def exit(self):
         self.console.clear()
@@ -115,7 +93,7 @@ class RenderEngine(EngineBase):
     def render_scene(self):
         file_path = self.background
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"file {file_path} isnt found XD")
+            return
 
         image = cv2.imread(file_path)
         if image is None:
@@ -145,11 +123,60 @@ class RenderEngine(EngineBase):
         self.render_tab()
 
 class LogicEngine(RenderEngine):
+    def __init__(self):
+        super().__init__()
+        self.scenes = []
+        self.lua_env = self.lua.globals()
+        self.choices = {}
+
+
     def next_scene(self):
-        self.id += 1
-        if self.id > len(self.scenes):
-            self.id = len(self.scenes)
-    
+        if self.id < len(self.scenes):
+            self.id += 1
+            self.load_scene(self.scenes[self.id - 1])
+            self.apply_lua_logic()
+
+    def apply_lua_logic(self, lua_function_name="modify_scene"):
+        if lua_function_name in self.lua_env:
+
+            if isinstance(self.choices, dict):
+                self.choices = list(self.choices.values())
+
+            if not isinstance(self.choices, list):
+                self.choices = []
+
+            for i, choice in enumerate(self.choices):
+                if not isinstance(choice, dict):
+                    self.choices[i] = {}
+
+            lua_choices = copy.deepcopy(self.choices)
+
+            try:
+                lua_table_choices = self.lua.table_from([dict(choice) for choice in lua_choices])
+            except TypeError as e:
+                print(f"[ERROR] Ошибка при преобразовании choices: {e}")
+                lua_table_choices = self.lua.table_from([])
+
+            scene_data = {
+                "id": self.id,
+                "text": self.text,
+                "background": self.background,
+                "person": self.person,
+                "choices": lua_table_choices,
+            }
+
+            lua_function = self.lua_env[lua_function_name]
+            new_scene = lua_function(scene_data)
+
+            if isinstance(new_scene, dict):
+                self.text = new_scene.get("text", self.text)
+                self.person = new_scene.get("person", self.person)
+                self.background = new_scene.get("background", self.background)
+                self.choices = lua_table_to_dict(new_scene.get("choices", self.choices))
+            
+            if lua_function_name == "post_scene":
+                self.lua_env.post_scene = None
+
     def prev_scene(self):
         self.id -= 1
         if self.id < 1:
@@ -168,6 +195,10 @@ class LogicEngine(RenderEngine):
         self.text = scene["text"]
         self.background = scene["background"]
         self.person = scene["person"]
+        if "script" in scene and os.path.exists(scene["script"]):
+            with open(scene["script"], "r", encoding="utf-8") as f:
+                lua_code = f.read()
+            self.lua.execute(lua_code)
 
     def register_scenes(self):
         self.scenes = []
@@ -178,3 +209,14 @@ class LogicEngine(RenderEngine):
         self.scenes.sort(key=lambda x: x["id"])
         self.load_scene(self.scenes[0])
         return self.scenes
+
+    def run(self):
+        self.register_scenes()
+        for _ in range(len(self.scenes)):
+            self.apply_lua_logic()
+            self.render()
+            self.apply_lua_logic(lua_function_name="post_scene")
+            getpass(prompt='')
+            self.next_scene()
+        
+        print("the end")

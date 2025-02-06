@@ -1,11 +1,6 @@
-import getpass
-from engine import LogicEngine, RenderEngine
+from engine import LogicEngine
+
 
 eng = LogicEngine()
-eng.register_scenes()
-eng.render()
-getpass.getpass(prompt="")
-eng.next_scene()
-eng.render()
-getpass.getpass(prompt="")
-eng.exit()
+
+eng.run()
