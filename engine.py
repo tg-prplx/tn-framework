@@ -8,7 +8,7 @@ from json import load, dump, JSONDecodeError
 from rich.box import SQUARE
 from lupa import LuaRuntime, lua_type
 from getpass import getpass
-import copy
+import pygame
 
 
 SYMBOLS = np.array(list("▒▓▓█"))
@@ -16,7 +16,11 @@ SYMBOLS = np.array(list("▒▓▓█"))
 
 def lua_table_to_dict(lua_table):
     if lua_type(lua_table) != "table":
-        return lua_table if isinstance(lua_table, (str, int, float, bool, list, dict)) else None
+        return (
+            lua_table
+            if isinstance(lua_table, (str, int, float, bool, list, dict))
+            else None
+        )
 
     result = {}
     for key, value in lua_table.items():
@@ -25,7 +29,6 @@ def lua_table_to_dict(lua_table):
         result[str(key)] = lua_table_to_dict(value)
 
     return result
-
 
 
 class ThemeManager:
@@ -43,6 +46,18 @@ class ThemeManager:
         return self.theme
 
 
+class MusicManager:
+    def play_audio(self, file_path):
+        if os.path.exists(file_path):
+            pygame.mixer.music.load(file_path)
+            pygame.mixer.music.play(-1)
+        else:
+            print(f"[ERROR] Аудиофайл {file_path} не найден")
+
+    def stop_audio(self):
+        pygame.mixer.music.stop()
+
+
 class EngineBase:
     def __init__(self) -> None:
         self.console = Console()
@@ -58,6 +73,8 @@ class EngineBase:
         self.scenes = []
         self.lua_env = self.lua.globals()
         self.choices = {}
+        self.music = ""
+        pygame.mixer.init()
 
     def exit(self):
         self.console.clear()
@@ -65,14 +82,6 @@ class EngineBase:
 
 
 class RenderEngine(EngineBase):
-    def get_scene(self):
-        return {
-            "id": self.id,
-            "text": self.text,
-            "background": self.background,
-            "person": self.person,
-        }
-
     def render_tab(self):
         box_width = self.w - 2
         inner_width = box_width - 2
@@ -137,17 +146,65 @@ class RenderEngine(EngineBase):
         self.render_tab()
 
 
-class LogicEngine(RenderEngine):
+class LogicEngine(RenderEngine, MusicManager):
     def __init__(self):
         super().__init__()
         self.lua.globals().engine = self
         self.await_input = True
+
+    def load_scene(self, scene: dict, execute=True):
+        self.id = scene["id"]
+        self.text = scene["text"]
+        self.background = scene["background"]
+        self.person = scene["person"]
+        if "music" in scene:
+            self.music = scene["music"]
+            self.play_audio(self.music)
+        if "script" in scene and os.path.exists(scene["script"]) and execute:
+            with open(scene["script"], "r", encoding="utf-8") as f:
+                lua_code = f.read()
+            self.lua.execute(lua_code)
+
+    def register_scenes(self):
+        self.scenes = []
+        for i in os.listdir("scenes"):
+            if i.endswith(".json"):
+                with open(os.path.join("scenes", i), "r", encoding="utf-8") as f:
+                    self.scenes.append(load(f))
+        self.scenes.sort(key=lambda x: x["id"])
+        self.load_scene(self.scenes[0])
+        return self.scenes
+
+    def get_scene(self):
+        return {
+            "id": self.id,
+            "text": self.text,
+            "background": self.background,
+            "person": self.person,
+            "choices": self.choices,
+            "music": self.music,
+        }
 
     def next_scene(self):
         if self.id < len(self.scenes):
             self.id += 1
             self.load_scene(self.scenes[self.id - 1])
             self.apply_lua_logic()
+
+    def prev_scene(self):
+        self.id -= 1
+        if self.id < 1:
+            self.id = 1
+        self.load_scene(self.scenes[self.id - 1])
+        self.apply_lua_logic()
+
+    def custom_scene(self, id: int):
+        self.id = id
+        if self.id < 1:
+            self.id = 1
+        elif self.id > len(self.scenes):
+            self.id = len(self.scenes)
+        self.load_scene(self.scenes[self.id - 1])
 
     def apply_lua_logic(self, lua_function_name="modify_scene"):
         if lua_function_name in self.lua_env:
@@ -164,7 +221,9 @@ class LogicEngine(RenderEngine):
 
             if isinstance(self.choices, dict):
                 self.choices = {
-                    int(k): v for k, v in self.choices.items() if isinstance(k, (int, str)) and str(k).isdigit()
+                    int(k): v
+                    for k, v in self.choices.items()
+                    if isinstance(k, (int, str)) and str(k).isdigit()
                 }
 
             try:
@@ -179,6 +238,7 @@ class LogicEngine(RenderEngine):
                 "background": self.background,
                 "person": self.person,
                 "choices": lua_choices,
+                "music": self.music,
             }
 
             lua_function = self.lua_env[lua_function_name]
@@ -193,39 +253,6 @@ class LogicEngine(RenderEngine):
             if lua_function_name == "post_scene":
                 self.lua_env.post_scene = None
 
-    def prev_scene(self):
-        self.id -= 1
-        if self.id < 1:
-            self.id = 1
-
-    def custom_scene(self, id: int):
-        self.id = id
-        if self.id < 1:
-            self.id = 1
-        elif self.id > len(self.scenes):
-            self.id = len(self.scenes)
-        self.load_scene(self.scenes[self.id - 1])
-
-    def load_scene(self, scene: dict, execute=True):
-        self.id = scene["id"]
-        self.text = scene["text"]
-        self.background = scene["background"]
-        self.person = scene["person"]
-        if "script" in scene and os.path.exists(scene["script"]) and execute:
-            with open(scene["script"], "r", encoding="utf-8") as f:
-                lua_code = f.read()
-            self.lua.execute(lua_code)
-
-    def register_scenes(self):
-        self.scenes = []
-        for i in os.listdir("scenes"):
-            if i.endswith(".json"):
-                with open(os.path.join("scenes", i), "r", encoding="utf-8") as f:
-                    self.scenes.append(load(f))
-        self.scenes.sort(key=lambda x: x["id"])
-        self.load_scene(self.scenes[0])
-        return self.scenes
-
     def save_game(self, filename="save.json"):
         if self.choices == {}:
             self.choices = self.lua.table_from({})
@@ -236,6 +263,7 @@ class LogicEngine(RenderEngine):
             "background": self.background,
             "person": self.person,
             "choices": lua_table_to_dict(self.choices),
+            "music": self.music,
         }
         with open(filename, "w", encoding="utf-8") as f:
             dump(save_data, f, indent=4)
@@ -268,7 +296,7 @@ class LogicEngine(RenderEngine):
         if os.path.exists("save.json"):
             self.load_game()
 
-        for _ in range(len(self.scenes)):
+        for _ in range(len(self.scenes) - (self.id - 1)):
             self.save_game()
             self.apply_lua_logic()
             self.render()
