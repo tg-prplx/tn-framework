@@ -14,7 +14,7 @@
 1. Установите Python **3.8+**.
 2. Установите зависимости:
    ```sh
-   pip install rich numpy opencv-python lupa
+   pip install rich numpy opencv-python lupa pygame
    ```
 3. **Создайте структуру проекта**:
    ```
