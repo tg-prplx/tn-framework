@@ -1,9 +1,0 @@
-{
-    "id": 2,
-    "text": "I'm gentle closed the door.",
-    "background": "images/ani.jpg",
-    "person": "I'm",
-    "choices": {
-        "picked_path": 12
-    }
-}

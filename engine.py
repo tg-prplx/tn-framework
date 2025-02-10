@@ -11,7 +11,7 @@ from getpass import getpass
 import pygame
 
 
-SYMBOLS = np.array(list("▒▓▓█"))
+SYMBOLS = np.array(list("▒"))
 
 
 def lua_table_to_dict(lua_table):
@@ -130,20 +130,16 @@ class RenderEngine(EngineBase):
         indices = np.clip(indices, 0, len(SYMBOLS) - 1)
         symbols = SYMBOLS[indices]
 
-        # Создаем массив для фона, заполняем его нулями
         avg_colors = np.zeros_like(resized_image)
 
-        # Обрабатываем каждый пиксель (кроме последнего столбца, чтобы не выйти за границы)
         for y in range(resized_image.shape[0]):
             for x in range(resized_image.shape[1] - 1):
                 left_pixel = resized_image[y, x]
                 right_pixel = resized_image[y, x + 1]
 
-                # Взвешенное среднее, чтобы избежать неожиданных цветов
                 avg_pixel = np.sqrt((left_pixel.astype(np.float32) ** 2 + right_pixel.astype(np.float32) ** 2) / 2)
                 avg_colors[y, x] = avg_pixel.astype(np.uint8)
 
-        # Последний столбец копирует предыдущий, чтобы избежать артефактов
         avg_colors[:, -1] = avg_colors[:, -2]
 
         output = [
