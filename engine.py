@@ -11,25 +11,7 @@ from getpass import getpass
 import pygame
 
 
-SYMBOLS = np.array(list("▒"))
-
-
-def lua_table_to_dict(lua_table):
-    if lua_type(lua_table) != "table":
-        return (
-            lua_table
-            if isinstance(lua_table, (str, int, float, bool, list, dict))
-            else None
-        )
-
-    result = {}
-    for key, value in lua_table.items():
-        if lua_type(value) == "function":
-            continue
-        result[str(key)] = lua_table_to_dict(value)
-
-    return result
-
+SYMBOLS = np.array(list("▒▓▓█"))
 
 class ThemeManager:
     def __init__(self) -> None:
