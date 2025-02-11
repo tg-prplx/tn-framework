@@ -164,6 +164,15 @@ class LogicEngine(RenderEngine, MusicManager):
         self.lua.globals().engine = self
         self.await_input = True
 
+    def add_choice(self, name: str, choice: str):
+        self.choices[name] = choice
+
+    def get_choice(self, name: str):
+        return self.choices[name]
+    
+    def delete_choice(self, name: str):
+        del self.choices[name]
+
     def load_scene(self, scene: dict, execute=True):
         self.id = scene["id"]
         self.text = scene["text"]
@@ -221,35 +230,14 @@ class LogicEngine(RenderEngine, MusicManager):
     def apply_lua_logic(self, lua_function_name="modify_scene"):
         if lua_function_name in self.lua_env:
 
-            if isinstance(self.choices, dict):
-                self.choices = list(self.choices.values())
-
-            if not isinstance(self.choices, list):
-                self.choices = []
-
-            for i, choice in enumerate(self.choices):
-                if not isinstance(choice, dict):
-                    self.choices[i] = {}
-
-            if isinstance(self.choices, dict):
-                self.choices = {
-                    int(k): v
-                    for k, v in self.choices.items()
-                    if isinstance(k, (int, str)) and str(k).isdigit()
-                }
-
-            try:
-                lua_choices = self.lua.table_from(self.choices)
-            except TypeError as e:
-                print(f"[ERROR] Ошибка при преобразовании choices: {e}")
-                lua_choices = self.lua.table_from([])
-
             scene_data = {
                 "id": self.id,
                 "text": self.text,
                 "background": self.background,
                 "person": self.person,
-                "choices": lua_choices,
+                "get_choice": self.get_choice,
+                "delete_choice": self.delete_choice,
+                "add_choice": self.add_choice,
                 "music": self.music,
             }
 
@@ -260,23 +248,22 @@ class LogicEngine(RenderEngine, MusicManager):
                 self.text = new_scene.get("text", self.text)
                 self.person = new_scene.get("person", self.person)
                 self.background = new_scene.get("background", self.background)
-                self.choices = lua_table_to_dict(new_scene.get("choices", self.choices))
+                self.choices = new_scene.get("choices", self.choices)
 
             if lua_function_name == "post_scene":
                 self.lua_env.post_scene = None
 
     def save_game(self, filename="save.json"):
-        if self.choices == {}:
-            self.choices = self.lua.table_from({})
 
         save_data = {
             "id": self.id,
             "text": self.text,
             "background": self.background,
             "person": self.person,
-            "choices": lua_table_to_dict(self.choices),
             "music": self.music,
+            "choices": self.choices
         }
+
         with open(filename, "w", encoding="utf-8") as f:
             dump(save_data, f, indent=4)
 
@@ -289,13 +276,7 @@ class LogicEngine(RenderEngine, MusicManager):
             self.text = save_data["text"]
             self.background = save_data["background"]
             self.person = save_data["person"]
-            if isinstance(save_data["choices"], dict):
-                converted_choices = {
-                    int(k): v for k, v in save_data["choices"].items() if k.isdigit()
-                }
-                self.choices = self.lua.table_from(converted_choices)
-            else:
-                self.choices = self.lua.table_from([])
+            self.choices = save_data["choices"]
 
             self.load_scene(self.scenes[self.id - 1])
 
