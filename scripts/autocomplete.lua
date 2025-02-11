@@ -3,6 +3,22 @@
 -- Создаём объект engine
 engine = {}
 
+
+-- scene_stub.lua
+
+-- Создаём объект scene
+scene = {}
+
+-- Атрибуты сцены
+scene.id = 0                -- ID сцены
+scene.text = ""             -- Текст сцены
+scene.background = ""       -- Путь к изображению фона
+scene.person = ""           -- Имя персонажа, говорящего в сцене
+scene.choices = {}          -- Таблица доступных выборов
+scene.music = ""            -- Путь к аудиофайлу сцены
+scene.show_tab = true       -- Флаг отображения текстовой панели
+
+
 -- Атрибуты движка
 engine.id = 0                -- ID текущей сцены
 engine.text = ""             -- Текст диалога

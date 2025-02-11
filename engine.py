@@ -10,6 +10,7 @@ from lupa import LuaRuntime, lua_type
 from getpass import getpass
 import pygame
 
+cv2.ocl.setUseOpenCL(True)
 
 SYMBOLS = np.array(list("▒▓▓█"))
 
@@ -53,6 +54,7 @@ class EngineBase:
         self.tab_height = 3
         self.lua = LuaRuntime(unpack_returned_tuples=True)
         self.scenes = []
+        self.show_tab = True
         self.lua_env = self.lua.globals()
         self.choices = {}
         self.music = ""
@@ -134,7 +136,7 @@ class RenderEngine(EngineBase):
 
         self.console.print("\n".join(output), end="")
 
-    def render(self):
+    def render(self, render_tab: bool):
         self.console.clear()
         self.render_scene()
         self.render_tab()
@@ -220,6 +222,7 @@ class LogicEngine(RenderEngine, MusicManager):
                 "get_choice": self.get_choice,
                 "delete_choice": self.delete_choice,
                 "add_choice": self.add_choice,
+                "cv": cv2,
                 "music": self.music,
             }
 
@@ -231,6 +234,7 @@ class LogicEngine(RenderEngine, MusicManager):
                 self.person = new_scene.get("person", self.person)
                 self.background = new_scene.get("background", self.background)
                 self.choices = new_scene.get("choices", self.choices)
+                self.show_tab = new_scene.get("show_tab", True)
 
             if lua_function_name == "post_scene":
                 self.lua_env.post_scene = None
@@ -274,7 +278,7 @@ class LogicEngine(RenderEngine, MusicManager):
         for _ in range(len(self.scenes) - (self.id - 1)):
             self.save_game()
             self.apply_lua_logic()
-            self.render()
+            self.render(self.show_tab)
             self.apply_lua_logic(lua_function_name="post_scene")
 
             if self.await_input:
