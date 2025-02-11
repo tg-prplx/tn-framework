@@ -31,6 +31,7 @@ engine.console = {}          -- Терминальная консоль (rich.Co
 engine.lua = {}              -- Объект LuaRuntime
 engine.lua_env = {}          -- Lua окружение движка
 engine.await_input = true    -- Флаг ожидания ввода игрока
+engine.show_tab = true       -- Флаг отображения текстовой панели
 
 -- Методы управления сценами
 

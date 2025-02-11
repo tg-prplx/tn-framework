@@ -1,0 +1,10 @@
+{
+    "id": 3,
+    "text": "\u0422\u044b \u0442\u0430\u043a\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u043d\u044b\u0439",
+    "background": "images/ani.jpg",
+    "person": "\u0414\u0435\u0432\u0443\u0448\u043a\u0430",
+    "music": "",
+    "choices": {
+        "ch": "12"
+    }
+}

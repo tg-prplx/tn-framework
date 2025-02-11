@@ -139,7 +139,8 @@ class RenderEngine(EngineBase):
     def render(self, render_tab: bool):
         self.console.clear()
         self.render_scene()
-        self.render_tab()
+        if self.show_tab:
+            self.render_tab()
 
 
 class LogicEngine(RenderEngine, MusicManager):
@@ -169,6 +170,14 @@ class LogicEngine(RenderEngine, MusicManager):
             with open(scene["script"], "r", encoding="utf-8") as f:
                 lua_code = f.read()
             self.lua.execute(lua_code)
+    
+    def default_scene(self, scene: dict):
+        self.id = scene["id"]
+        self.text = scene["text"]
+        self.background = scene["background"]
+        self.person = scene["person"]
+        if "musin" in scene:
+            self.music = scene["music"]
 
     def register_scenes(self):
         self.scenes = []
@@ -177,7 +186,7 @@ class LogicEngine(RenderEngine, MusicManager):
                 with open(os.path.join("scenes", i), "r", encoding="utf-8") as f:
                     self.scenes.append(load(f))
         self.scenes.sort(key=lambda x: x["id"])
-        self.load_scene(self.scenes[0])
+        self.default_scene(self.scenes[self.id - 1])
         return self.scenes
 
     def get_scene(self):
@@ -247,7 +256,7 @@ class LogicEngine(RenderEngine, MusicManager):
             "background": self.background,
             "person": self.person,
             "music": self.music,
-            "choices": self.choices
+            "choices": self.choices,
         }
 
         with open(filename, "w", encoding="utf-8") as f:
@@ -275,7 +284,7 @@ class LogicEngine(RenderEngine, MusicManager):
         if os.path.exists("save.json"):
             self.load_game()
 
-        for _ in range(len(self.scenes) - (self.id - 1)):
+        for _ in range(len(self.scenes) - (self.id)):
             self.save_game()
             self.apply_lua_logic()
             self.render(self.show_tab)
