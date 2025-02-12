@@ -284,7 +284,7 @@ class LogicEngine(RenderEngine, MusicManager):
         if os.path.exists("save.json"):
             self.load_game()
 
-        for _ in range(len(self.scenes) - (self.id)):
+        for _ in range(len(self.scenes) - (self.id - 1)):
             self.save_game()
             self.apply_lua_logic()
             self.render(self.show_tab)
