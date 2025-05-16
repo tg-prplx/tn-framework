@@ -1,10 +1,10 @@
 {
     "id": 4,
     "text": "I'm gentle open the door.",
-    "background": "images/nah.webp",
+    "background": "images/ani.jpg",
     "person": "You",
     "music": "",
     "choices": {
-        "ch": "42"
+        "choice_rand": "42"
     }
 }

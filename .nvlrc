@@ -1,0 +1,3 @@
+scene-dir  = ./scenes
+novel-name = test novell
+save-file  = save.json

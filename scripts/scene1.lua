@@ -5,7 +5,7 @@ end
 
 function post_scene(scene)
   io.write("Введите число: ")
-  engine.add_choice("ch", io.read())
+  engine.add_choice("choice_rand", io.read())
   engine.await_input = false
   return scene
 end

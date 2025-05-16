@@ -2,6 +2,6 @@
     "id": 4,
     "text": "I'm gentle open the door.",
     "person": "You",
-    "background": "images/nah.webp",
+    "background": "images/ani.jpg",
     "script": "scripts/pass.lua"
 }
