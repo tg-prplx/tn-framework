@@ -12,7 +12,26 @@ class TNFDevTools:
         self.save_file = self.parser.get_save_file()
         self.args = sys.argv[1:]
         self.count = 0
-    
+        self.checked_paths = set()
+
+    def file_exists(self, path):
+        if path in self.checked_paths:
+            return True
+        if os.path.exists(path):
+            self.checked_paths.add(path)
+            return True
+        return False
+
+    def validate_requirements(self, scene: dict, base_path: str = "."):
+        required_keys = ['music', 'script', 'background']
+        for key in required_keys:
+            if key in scene:
+                file_path = os.path.join(base_path, scene[key])
+                if not self.file_exists(file_path):
+                    raise RequirementsError(
+                        f"{key.capitalize()} file \"{scene[key]}\" not found for scene with ID = {scene.get('id', '?')}"
+                    )
+
     def is_valid_json(self, text: str) -> bool:
         try:
             file = loads(text)
@@ -20,16 +39,6 @@ class TNFDevTools:
             return True
         except JSONDecodeError:
             return False
-    
-    def validate_requirements(self, scene: dict, base_path: str = "."):
-        required_keys = ['music', 'script', 'background']
-        for key in required_keys:
-            if key in scene:
-                file_path = os.path.join(base_path, scene[key])
-                if not os.path.exists(file_path):
-                    raise RequirementsError(
-                        f"{key.capitalize()} file \"{scene[key]}\" not found for scene with ID = {scene.get('id', '?')}"
-                    )
 
     def validate(self) -> None:
         if not os.path.exists(self.scenes_dir):
@@ -115,7 +124,7 @@ class CLITFN(TNFDevTools):
         run_subparsers = run_parser.add_subparsers(dest="run_command", required=True)
         package_parser = run_subparsers.add_parser("package", help="Run from .nvlpkg file")
         package_parser.add_argument("pkg_path", help="Path to .nvlpkg file")
-        package_parser.add_argument("--from", dest="from", help="From which ID novell starts.", default=None)
+        package_parser.add_argument("--from", dest="from_id", help="From which ID novell starts.", default=None)
 
 
         folder_parser = run_subparsers.add_parser("folder", help="Run from folder")
@@ -136,8 +145,11 @@ class CLITFN(TNFDevTools):
                 pass
             elif self.args.run_command == "folder":
                 folder_path = self.args.folder_path
-                from_id     = int(self.args.from_id)
-                self.run(from_id=from_id)
+                from_id = self.args.from_id
+                if from_id != None:
+                    self.run(from_id=int(from_id))
+                else:
+                    self.run()
             else:
                 print("Error: unknown 'run' subcomand.")
             
