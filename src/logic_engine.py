@@ -14,8 +14,7 @@ class LogicEngine(RenderEngine, MusicManager):
     def get_choice(self, name: str):
         logging.debug(f"getting {name} choice")
         if name not in self.choices:
-            logging.critical(f"cannot get {name} choice, because it don't exist")
-            exit(-1)
+            return None
         return self.choices[name]
     
     def delete_choice(self, name: str):
@@ -77,6 +76,8 @@ class LogicEngine(RenderEngine, MusicManager):
             self.id += 1
             self.load_scene(self.scenes[self.id - 1])
             self.apply_lua_logic()
+        else:
+            self.exit()
 
     def prev_scene(self):
         logging.info("loading previous scene")

@@ -2,5 +2,6 @@
     "id": 6,
     "text": "Приветик~",
     "person": "Вумен глупи",
-    "background": "images/nah.webp"
+    "background": "images/nah.webp",
+    "script": "scripts/scene3.lua"
 }

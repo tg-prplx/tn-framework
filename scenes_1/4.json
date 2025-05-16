@@ -1,0 +1,7 @@
+{
+    "id": 4,
+    "text": "I'm gentle open the door.",
+    "person": "You",
+    "background": "images/ani.jpg",
+    "script": "scripts/pass.lua"
+}

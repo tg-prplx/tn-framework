@@ -1,6 +1,7 @@
 {
-    "id": 1,
-    "text": "I'm gentle open the door.",
-    "person": "You",
-    "background": "images/ani.jpg"
+  "id": 1,
+  "text": "Привет! Давай сыграем в угадайку. Я загадал число от 1 до 5. Введи своё предположение:",
+  "person": "ИИ",
+  "background": "images/start.png",
+  "script": "scripts/input.lua"
 }

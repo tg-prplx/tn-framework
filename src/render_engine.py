@@ -46,6 +46,7 @@ class RenderEngine(EngineBase):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         term_width = min(self.w, image.shape[1])
         term_height = min(self.h, image.shape[0])
+
         resized_image = cv2.resize(
             image,
             (term_width, term_height - self.tab_height),
@@ -57,25 +58,20 @@ class RenderEngine(EngineBase):
         indices = np.clip(indices, 0, len(SYMBOLS) - 1)
         symbols = SYMBOLS[indices]
 
-        avg_colors = np.zeros_like(resized_image)
+        left = resized_image[:, :-1, :].astype(np.float32)
+        right = resized_image[:, 1:, :].astype(np.float32)
+        avg_colors = np.sqrt((left ** 2 + right ** 2) / 2).astype(np.uint8)
 
-        for y in range(resized_image.shape[0]):
-            for x in range(resized_image.shape[1] - 1):
-                left_pixel = resized_image[y, x]
-                right_pixel = resized_image[y, x + 1]
+        last_col = avg_colors[:, -1:, :]
+        avg_colors = np.concatenate([avg_colors, last_col], axis=1)
 
-                avg_pixel = np.sqrt((left_pixel.astype(np.float32) ** 2 + right_pixel.astype(np.float32) ** 2) / 2)
-                avg_colors[y, x] = avg_pixel.astype(np.uint8)
-
-        avg_colors[:, -1] = avg_colors[:, -2]
-
-        output = [
-            "".join(
+        output = []
+        for row_pixels, row_avg_colors, row_symbols in zip(resized_image, avg_colors, symbols):
+            line = "".join(
                 f"[#{r:02x}{g:02x}{b:02x} on #{rb:02x}{gb:02x}{bb:02x}]{s}[/]"
-                for (r, g, b), (rb, gb, bb), s in zip(row_pixels, row_avg_colors, row_symbols) # type: ignore
+                for (r, g, b), (rb, gb, bb), s in zip(row_pixels, row_avg_colors, row_symbols)
             )
-            for row_pixels, row_avg_colors, row_symbols in zip(resized_image, avg_colors, symbols)
-        ]
+            output.append(line)
 
         self.console.print("\n".join(output), end="")
 

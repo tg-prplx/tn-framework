@@ -1,7 +1,7 @@
 {
-    "id": 2,
-    "text": "I'm gentle closed the door.",
-    "person": "I'm",
-    "background": "images/ani.jpg",
-    "script": "scripts/scene1.lua"
+  "id": 2,
+  "text": "Проверяем твой ответ...",
+  "person": "ИИ",
+  "background": "images/start.png",
+  "script": "scripts/guess.lua"
 }

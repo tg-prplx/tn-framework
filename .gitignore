@@ -1,0 +1,6 @@
+__pycache__
+app.log
+save.json
+choices.json
+.last-scene.json
+.DS_Store
