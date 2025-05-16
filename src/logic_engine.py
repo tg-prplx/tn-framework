@@ -40,7 +40,7 @@ class LogicEngine(RenderEngine, MusicManager):
                 lua_code = f.read()
             logging.info(f"executing {scene['script']}")
             self.lua.execute(lua_code)
-        elif not os.path.exists(scene['script']):
+        elif "script" in scene and not os.path.exists(scene['script']):
             logging.warning(f"script {scene['script']} entry founded in scene file, but file dont found")
     
     def default_scene(self, scene: dict):
@@ -158,11 +158,13 @@ class LogicEngine(RenderEngine, MusicManager):
             logging.critical("error while loading save")
             self.choices = {}
 
-    def run(self):
+    def run(self, register: bool = True, load_save: bool = True):
         logging.info("running game")
-        self.register_scenes()
-        if os.path.exists(self.save_dir):
-            self.load_game()
+        if register:
+            self.register_scenes()
+        if load_save:
+            if os.path.exists(self.save_dir):
+                self.load_game()
         logging.info("entering game loop")
         for _ in range(len(self.scenes) - (self.id - 1)):
             self.save_game()

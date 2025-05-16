@@ -1,53 +1,21 @@
-[2025-05-15 16:30:33,345] - [INFO] - starting engine base
-[2025-05-15 16:30:33,345] - [INFO] - console starting
-[2025-05-15 16:30:33,346] - [INFO] - theme manager starting
-[2025-05-15 16:30:33,346] - [INFO] - loading theme
-[2025-05-15 16:30:33,346] - [WARNING] - theme main.theme not found
-[2025-05-15 16:30:33,346] - [INFO] - starting lua runtime
-[2025-05-15 16:30:33,346] - [INFO] - starting music mixer
-[2025-05-15 16:30:33,448] - [INFO] - running game
-[2025-05-15 16:30:33,449] - [INFO] - entering game loop
-[2025-05-15 16:30:33,449] - [DEBUG] - saving...
-[2025-05-15 16:30:33,450] - [DEBUG] - applying lua logic on id 1
-[2025-05-15 16:30:33,450] - [WARNING] - function modify_scene not found in lua env, skipping script...
-[2025-05-15 16:30:33,450] - [INFO] - rendering: 1
-[2025-05-15 16:30:33,450] - [DEBUG] - rendering scene: 1
-[2025-05-15 16:30:33,613] - [DEBUG] - rendering tab1
-[2025-05-15 16:30:33,613] - [DEBUG] - applying lua logic on id 1
-[2025-05-15 16:30:33,614] - [WARNING] - function post_scene not found in lua env, skipping script...
-[2025-05-15 16:30:36,059] - [INFO] - loading next scene
-[2025-05-15 16:30:36,059] - [DEBUG] - founded script scripts/scene1.lua
-[2025-05-15 16:30:36,059] - [INFO] - executing scripts/scene1.lua
-[2025-05-15 16:30:36,059] - [DEBUG] - applying lua logic on id 2
-[2025-05-15 16:30:36,059] - [DEBUG] - saving...
-[2025-05-15 16:30:36,060] - [DEBUG] - applying lua logic on id 2
-[2025-05-15 16:30:36,060] - [INFO] - rendering: 2
-[2025-05-15 16:30:36,060] - [DEBUG] - rendering scene: 2
-[2025-05-15 16:30:36,170] - [DEBUG] - applying lua logic on id 2
-[2025-05-15 16:30:37,828] - [DEBUG] - adding choice: choice_rand=42
-[2025-05-15 16:30:37,828] - [DEBUG] - executing post scene script
-[2025-05-15 16:30:37,828] - [INFO] - loading next scene
-[2025-05-15 16:30:37,828] - [DEBUG] - founded script scripts/scene2.lua
-[2025-05-15 16:30:37,829] - [INFO] - executing scripts/scene2.lua
-[2025-05-15 16:30:37,829] - [DEBUG] - applying lua logic on id 3
-[2025-05-15 16:30:37,829] - [DEBUG] - getting choice_rand choice
-[2025-05-15 16:30:37,829] - [DEBUG] - saving...
-[2025-05-15 16:30:37,829] - [DEBUG] - applying lua logic on id 3
-[2025-05-15 16:30:37,829] - [DEBUG] - getting choice_rand choice
-[2025-05-15 16:30:37,829] - [INFO] - rendering: 3
-[2025-05-15 16:30:37,830] - [DEBUG] - rendering scene: 3
-[2025-05-15 16:30:37,939] - [DEBUG] - rendering tab3
-[2025-05-15 16:30:37,940] - [DEBUG] - applying lua logic on id 3
-[2025-05-15 16:30:37,940] - [WARNING] - function post_scene not found in lua env, skipping script...
-[2025-05-15 16:30:39,196] - [INFO] - loading next scene
-[2025-05-15 16:30:39,196] - [DEBUG] - founded script scripts/pass.lua
-[2025-05-15 16:30:39,196] - [INFO] - executing scripts/pass.lua
-[2025-05-15 16:30:39,196] - [DEBUG] - applying lua logic on id 4
-[2025-05-15 16:30:39,196] - [DEBUG] - saving...
-[2025-05-15 16:30:39,197] - [DEBUG] - applying lua logic on id 4
-[2025-05-15 16:30:39,197] - [INFO] - rendering: 4
-[2025-05-15 16:30:39,197] - [DEBUG] - rendering scene: 4
-[2025-05-15 16:30:39,311] - [DEBUG] - rendering tab4
-[2025-05-15 16:30:39,312] - [DEBUG] - applying lua logic on id 4
-[2025-05-15 16:30:39,312] - [WARNING] - function post_scene not found in lua env, skipping script...
-[2025-05-15 16:30:39,626] - [INFO] - loading next scene
+[2025-05-16 11:45:22,346] - [INFO] > starting engine base
+[2025-05-16 11:45:22,346] - [INFO] > starting nvlrc reading
+[2025-05-16 11:45:22,346] - [INFO] > initialize nvlrc
+[2025-05-16 11:45:22,346] - [WARNING] > novell name not setted in nvlrc, be care
+[2025-05-16 11:45:22,346] - [INFO] > console starting
+[2025-05-16 11:45:22,346] - [INFO] > theme manager starting
+[2025-05-16 11:45:22,346] - [INFO] > loading theme
+[2025-05-16 11:45:22,346] - [WARNING] > theme main.theme not found
+[2025-05-16 11:45:22,347] - [INFO] > starting lua runtime
+[2025-05-16 11:45:22,347] - [INFO] > starting music mixer
+[2025-05-16 11:45:22,450] - [INFO] > loading custom scene
+[2025-05-16 11:45:22,451] - [INFO] > running game
+[2025-05-16 11:45:22,451] - [INFO] > entering game loop
+[2025-05-16 11:45:22,451] - [DEBUG] > saving...
+[2025-05-16 11:45:22,451] - [DEBUG] > applying lua logic on id 1
+[2025-05-16 11:45:22,451] - [WARNING] > function modify_scene not found in lua env, skipping script...
+[2025-05-16 11:45:22,451] - [INFO] > rendering: 1
+[2025-05-16 11:45:22,451] - [DEBUG] > rendering scene: 1
+[2025-05-16 11:45:22,673] - [DEBUG] > rendering tab1
+[2025-05-16 11:45:22,674] - [DEBUG] > applying lua logic on id 1
+[2025-05-16 11:45:22,674] - [WARNING] > function post_scene not found in lua env, skipping script...

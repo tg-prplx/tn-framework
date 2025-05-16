@@ -3,10 +3,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.box import SQUARE
 from lupa import LuaRuntime, lua_type
-from .music import *
-from .theming import *
-from ..config import *
-from .nvlrc import NVLRCParser
+from .capatibilities.music import *
+from .capatibilities.theming import *
+from .config import *
+from .packaging.nvlrc import NVLRCParser
 
 class EngineBase:
     def __init__(self) -> None:
@@ -15,7 +15,7 @@ class EngineBase:
         self.parser = NVLRCParser()
         self.nvl_name = self.parser.get_nvl_name()
         self.scenes_dir = self.parser.get_scene_dir()
-        self.save_dir  = self.parser.get_scene_dir()
+        self.save_dir  = self.parser.get_save_file()
         logging.info("console starting")
         self.console = Console()
         self.w, self.h = self.console.size

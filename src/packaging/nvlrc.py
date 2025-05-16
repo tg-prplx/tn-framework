@@ -1,7 +1,7 @@
 from ..config import *
 
 class NVLRCParser:
-    def __init__(self, name: str = './.nvlrc'):
+    def __init__(self, name: str = '.nvlrc'):
         self.name = name
         self.scene_dir = ""
         self.nvl_name = ""
@@ -16,9 +16,9 @@ class NVLRCParser:
                 raw_pairs = [line.split("=", 1) for line in args if "=" in line]
                 config = {k.strip(): v.strip() for k, v in raw_pairs}
 
-                self.nvl_name = config.get("nvl_name", "")
-                self.scene_dir = config.get("scene_dir", "")
-                self.save_file = config.get("save_file", "")
+                self.nvl_name = config.get("nvl-name", "")
+                self.scene_dir = config.get("scene-dir", "")
+                self.save_file = config.get("save-file", "")
 
                 if not self.nvl_name:
                     logging.warning("novell name not setted in nvlrc, be care")
