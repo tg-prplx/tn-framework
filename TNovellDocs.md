@@ -28,13 +28,11 @@
 
 **Требования**:
 
-- Python **3.6+**
-    
-- Установлены модули: `cv2`, `numpy`, `pygame`, `lupa`
+- Python **3.11+**
     
 
 ```bash
-pip install opencv-python numpy pygame lupa
+pip install -r requirements.txt
 ```
 
 ### ⏱ Установка алиасов
