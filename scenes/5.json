@@ -1,6 +1,6 @@
 {
     "id": 5,
-    "text": "Как вам игра?",
-    "person": "ИИ",
-    "background": "images/start.png"
+    "text": "Приветик~",
+    "person": "Вумен",
+    "background": "./images/nah.webp"
 }

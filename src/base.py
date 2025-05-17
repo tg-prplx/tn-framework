@@ -1,7 +1,5 @@
 import numpy as np
 from rich.console import Console
-from rich.panel import Panel
-from rich.box import SQUARE
 from lupa import LuaRuntime, lua_type
 from .capatibilities.music import *
 from .capatibilities.theming import *

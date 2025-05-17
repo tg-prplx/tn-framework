@@ -118,17 +118,17 @@ class CLITFN(TNFDevTools):
         play_parser = subparsers.add_parser("preview", help="Prewiev custom scene.")
         play_parser.add_argument("--scene", required=True, help="ID of scene.")
 
-        validate_parser = subparsers.add_parser("validate", help="проверить папку со сценами")
+        validate_parser = subparsers.add_parser("validate", help="Check folder scenes.")
 
-        run_parser = subparsers.add_parser("run", help="Run novell package or folder")
+        run_parser = subparsers.add_parser("run", help="Run novell package or folder.")
         run_subparsers = run_parser.add_subparsers(dest="run_command", required=True)
-        package_parser = run_subparsers.add_parser("package", help="Run from .nvlpkg file")
-        package_parser.add_argument("pkg_path", help="Path to .nvlpkg file")
+        package_parser = run_subparsers.add_parser("package", help="Run from .nvlpkg file.")
+        package_parser.add_argument("pkg_path", help="Path to .nvlpkg file.")
         package_parser.add_argument("--from", dest="from_id", help="From which ID novell starts.", default=None)
 
 
         folder_parser = run_subparsers.add_parser("folder", help="Run from folder")
-        folder_parser.add_argument("folder_path", help="Path to unpacked novell folder")
+        folder_parser.add_argument("folder_path", help="Path to unpacked novell folder.")
         folder_parser.add_argument("--from", dest="from_id", help="From which ID novell starts.", default=None)
 
         self.args = parser.parse_args()

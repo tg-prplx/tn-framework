@@ -1,6 +1,8 @@
 from .base import *
 import textwrap
 import cv2
+from rich.panel import Panel
+from rich.box import SQUARE
 
 cv2.ocl.setUseOpenCL(True)
 

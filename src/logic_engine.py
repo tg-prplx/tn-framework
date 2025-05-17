@@ -112,8 +112,11 @@ class LogicEngine(RenderEngine, MusicManager):
             }
 
             lua_function = self.lua_env[lua_function_name] # type: ignore
-            new_scene = lua_function(scene_data)
-
+            try:
+                new_scene = lua_function(scene_data)
+            except Exception as e:
+                logging.critical(f"Error in lua function: {e}")
+                exit(-1)
             if isinstance(new_scene, dict):
                 self.text = new_scene.get("text", self.text)
                 self.person = new_scene.get("person", self.person)
