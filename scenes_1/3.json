@@ -1,7 +1,0 @@
-{
-    "id": 3,
-    "text": "Ты такой странный",
-    "person": "Девушка",
-    "background": "images/ani.jpg",
-    "script": "scripts/scene2.lua"
-}
