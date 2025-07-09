@@ -1,32 +1,30 @@
 ![image](https://github.com/user-attachments/assets/adb85674-d807-4730-b709-425b57069f12)
 
 # 📚 Terminal Novell Framework (TNF)
-
-**TNF (Terminal Novell Framework)** — движок для создания **интерактивных текстовых новелл**, которые запускаются прямо в терминале.
-
-> показывает ASCII-арт, играет музыку, поддерживает выборы, логику на Lua и сохранения — всё в минималистичном CLI-стиле.
+**TNF (Terminal Novell Framework)** is an engine for creating **interactive text visual novels** that run directly in your terminal.
+> Shows ASCII art, plays music, supports choices, Lua logic, and saves games — all in a minimalistic CLI style.
 
 ---
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-### 📦 Требования
+### 📦 Requirements
 
-* Python **3.11+**
+_Python_ **3.11+**
 
-### 📥 Установка зависимостей
+### 📥 Installing dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### ⏱ Установка алиасов
+### ⏱ Setting up aliases
 
 ```bash
 source path.sh
 ```
 
-Теперь доступны удобные команды:
+Now you have convenient commands:
 
 ```bash
 tf-novell run folder . --from 1
@@ -35,154 +33,151 @@ scene-ide
 
 ---
 
-## 🗂️ Структура проекта
+## 🗂️ Project Structure
 
 ```plaintext
 ./
-├── .nvlrc               # конфиг новеллы
-├── scenes/              # JSON-файлы сцен (1.json, 2.json, ...)
-├── images/              # фоны
-├── music/               # музыка
-├── scripts/             # Lua-скрипты логики
-└── save.json            # сохранения
+├── .nvlrc               # Visual novel config
+├── scenes/              # Scene JSON files (1.json, 2.json, ...)
+├── images/              # Background images
+├── music/               # Music files
+├── scripts/             # Lua scripts for scene logic
+└── save.json            # Save file
 ```
 
 ---
 
-## ⚙️ Конфигурация (`.nvlrc`)
-
+## ⚙️ Configuration (`.nvlrc`)
 ```ini
-nvl-name=Моя первая новелла
+nvl-name=My First Novel
 scene-dir=scenes
 save-file=save.json
 ```
-
-| Ключ        | Описание         |
-| ----------- | ---------------- |
-| `nvl-name`  | Название новеллы |
-| `scene-dir` | Папка со сценами |
-| `save-file` | Файл сохранений  |
+| Key        | Description        |
+| ---------- | ------------------|
+| `nvl-name` | Name of the novel |
+| `scene-dir`| Scene folder      |
+| `save-file`| Save file path    |
 
 ---
 
-## 🎬 Создание сцены
+## 🎬 Creating a Scene
 
-Каждая сцена — `.json` файл:
+Every scene is a `.json` file:
 
-### 💡 Пример
+### 💡 Example
 
 ```json
 {
   "id": 1,
-  "text": "Привет, это моя первая сцена!",
-  "person": "Главный герой",
+  "text": "Hi, this is my first scene!",
+  "person": "Main Character",
   "background": "images/room.png",
   "music": "music/theme.mp3",
   "script": "scripts/scene1.lua"
 }
 ```
 
-### 🧱 Обязательные поля
+### 🧱 Required fields
 
-| Поле         | Тип | Описание                    |
-| ------------ | --- | --------------------------- |
-| `id`         | int | Номер сцены                 |
-| `text`       | str | Основной текст              |
-| `person`     | str | Имя говорящего              |
-| `background` | str | Путь к фоновому изображению |
+| Field       | Type | Description                     |
+| ----------- | ---- | ------------------------------ |
+| `id`        | int  | Scene number                   |
+| `text`      | str  | Scene text                     |
+| `person`    | str  | Speaker’s name                 |
+| `background`| str  | Path to background image        |
 
-### 🧩 Опциональные поля
+### 🧩 Optional fields
 
-| Поле     | Тип | Описание          |
-| -------- | --- | ----------------- |
-| `music`  | str | Путь к музыке     |
-| `script` | str | Lua-скрипт логики |
+| Field    | Type | Description         |
+| -------- | ---- | ------------------ |
+| `music`  | str  | Path to music file |
+| `script` | str  | Lua logic script   |
 
 ---
 
-## 🔧 Lua-скрипты
+## 🔧 Lua Scripts
 
-В движок встроен **Lua 5.1** через `lupa`. Ты можешь дополнять сцены логикой.
+The engine has integrated **Lua 5.1** via `lupa`. You can add custom logic to scenes.
 
-### 🔄 Основные хуки
+### 🔄 Main hooks
 
 ```lua
 function modify_scene(scene)
-    -- вызывается ДО показа сцены
+    -- Called BEFORE the scene is shown
     return scene
 end
-
 function post_scene(scene)
-    -- вызывается ПОСЛЕ показа сцены
+    -- Called AFTER the scene is shown
     return scene
 end
 ```
 
 ---
 
-## 📘 Lua API движка
+## 📘 Engine Lua API
 
-### 📍 Основные методы
+### 📍 Main methods
 
-| Метод                            | Аргументы                                 | Возвращает | Описание                          |
-| -------------------------------- | ----------------------------------------- | ---------- | --------------------------------- |
-| `engine.get_scene()`             | –                                         | `table`    | Текущая сцена как Lua-таблица     |
-| `engine.load_scene(scene, exec)` | `scene`, `execute?` (bool)                | –          | Загружает сцену, применяет логику |
-| `engine.next_scene()`            | –                                         | –          | Следующая сцена                   |
-| `engine.prev_scene()`            | –                                         | –          | Предыдущая сцена                  |
-| `engine.custom_scene(id)`        | `id` (int)                                | –          | Сцена по номеру                   |
-| `engine.apply_lua_logic(name)`   | `name` (str, по умолчанию `modify_scene`) | –          | Выполняет Lua-функцию по имени    |
-
----
-
-### 🎮 Работа с выбором
-
-| Метод                          | Аргументы                 | Возвращает | Описание              |
-| ------------------------------ | ------------------------- | ---------- | --------------------- |
-| `engine.add_choice(name, txt)` | `name` (str), `txt` (str) | –          | Добавляет выбор       |
-| `engine.get_choice(name)`      | `name` (str)              | `str`      | Получает текст выбора |
-| `engine.delete_choice(name)`   | `name` (str)              | –          | Удаляет выбор         |
+| Method                           | Args                                 | Returns    | Description                        |
+| -------------------------------- | ------------------------------------ | ---------- | -----------------------------------|
+| `engine.get_scene()`             | –                                    | `table`    | Gets current scene as a Lua table  |
+| `engine.load_scene(scene, exec)` | `scene`, `execute?` (bool)           | –          | Loads a scene and applies logic    |
+| `engine.next_scene()`            | –                                    | –          | Next scene                         |
+| `engine.prev_scene()`            | –                                    | –          | Previous scene                     |
+| `engine.custom_scene(id)`        | `id` (int)                           | –          | Load a scene by ID                 |
+| `engine.apply_lua_logic(name)`   | `name` (str, default `modify_scene`) | –          | Runs a Lua function by name        |
 
 ---
 
-### 🎵 Работа с музыкой
+### 🎮 Working with Choices
 
-| Метод                     | Аргументы         | Возвращает | Описание                      |
-| ------------------------- | ----------------- | ---------- | ----------------------------- |
-| `engine.play_audio(path)` | `file_path` (str) | –          | Воспроизводит музыку          |
-| `engine.stop_audio()`     | –                 | –          | Останавливает воспроизведение |
-
----
-
-### 💾 Сохранения
-
-| Метод                     | Аргументы              | Возвращает | Описание                                    |
-| ------------------------- | ---------------------- | ---------- | ------------------------------------------- |
-| `engine.save_game(name?)` | `filename` (str, опц.) | –          | Сохраняет в файл (по умолчанию `save.json`) |
-| `engine.load_game(name?)` | `filename` (str, опц.) | –          | Загружает сохранение                        |
+| Method                           | Args                      | Returns | Description                  |
+| -------------------------------- | ------------------------- | ------- | ---------------------------- |
+| `engine.add_choice(name, txt)`   | `name` (str), `txt` (str) | –       | Adds a choice                |
+| `engine.get_choice(name)`        | `name` (str)              | `str`   | Gets the text of a choice    |
+| `engine.delete_choice(name)`     | `name` (str)              | –       | Deletes a choice             |
 
 ---
 
-### 🖼️ Отрисовка
+### 🎵 Audio Controls
 
-| Метод                   | Аргументы | Возвращает | Описание             |
-| ----------------------- | --------- | ---------- | -------------------- |
-| `engine.render_tab()`   | –         | –          | Рисует нижнюю панель |
-| `engine.render_scene()` | –         | –          | ASCII-фон            |
-| `engine.render()`       | –         | –          | Полный рендер сцены  |
-
----
-
-### 🖥️ Консольные утилиты
-
-| Метод                        | Аргументы    | Возвращает | Описание                        |
-| ---------------------------- | ------------ | ---------- | ------------------------------- |
-| `engine.console.clear()`     | –            | –          | Очищает терминал                |
-| `engine.console.print(text)` | `text` (str) | –          | Печать текста с форматированием |
+| Method                     | Args           | Returns | Description                      |
+| -------------------------- | -------------- | ------- | ---------------------------------|
+| `engine.play_audio(path)`  | `file_path`    | –       | Plays music                      |
+| `engine.stop_audio()`      | –              | –       | Stops music playback             |
 
 ---
 
-### ▶️ Запуск игрового цикла
+### 💾 Saving
+
+| Method                         | Args                | Returns | Description                              |
+| ------------------------------ | ------------------- | ------- | -----------------------------------------|
+| `engine.save_game(name?)`      | `filename` (str,opt)| –       | Saves to file (default: `save.json`)     |
+| `engine.load_game(name?)`      | `filename` (str,opt)| –       | Loads the save file                      |
+
+---
+
+### 🖼️ Rendering
+
+| Method                   | Args     | Returns | Description              |
+| ------------------------ | -------- | ------- | ------------------------|
+| `engine.render_tab()`    | –        | –       | Draws the bottom panel  |
+| `engine.render_scene()`  | –        | –       | Renders ASCII background|
+| `engine.render()`        | –        | –       | Full scene rendering    |
+
+---
+
+### 🖥️ Console Utilities
+
+| Method                        | Args         | Returns | Description                           |
+| ----------------------------- | ------------ | ------- | ------------------------------------- |
+| `engine.console.clear()`      | –            | –       | Clear the terminal                    |
+| `engine.console.print(text)`  | `text` (str) | –       | Print formatted text                  |
+
+---
+
+### ▶️ Running Game Loop
 
 ```lua
 engine.run()
@@ -190,37 +185,37 @@ engine.run()
 
 ---
 
-## 🔁 Примеры Lua-логики
+## 🔁 Lua Logic Examples
 
-### 1. Замена текста
+### 1. Changing text
 
 ```lua
 function modify_scene(scene)
-    scene.text = "Этот текст заменён"
+    scene.text = "This text is replaced"
     return scene
 end
 ```
 
-### 2. Ввод от пользователя
+### 2. User input
 
 ```lua
 function post_scene(scene)
-    io.write("Введите число: ")
+    io.write("Enter a number: ")
     engine.add_choice("choice_rand", io.read())
     engine.await_input = false
     return scene
 end
 ```
 
-### 3. Обработка выбора
+### 3. Handling choice
 
 ```lua
 function modify_scene(scene)
     local last = engine.get_choice("choice_rand")
     if last == "42" then
-        scene.text = "ты выбрал 42! офигенный выбор!"
+        scene.text = "You picked 42! Awesome choice!"
     else
-        scene.text = "странный выбор... но ладно."
+        scene.text = "Strange choice... but OK."
     end
     return scene
 end
@@ -228,25 +223,23 @@ end
 
 ---
 
-## 🧪 Вспомогательные команды
+## 🧪 Helper Commands
 
-### ✅ Валидация
+### ✅ Validation
 
 ```bash
 tf-novell validate
 ```
+Checks project structure and file presence.
 
-проверяет структуру проекта и наличие файлов.
-
-### 👁️ Превью сцены
+### 👁️ Scene Preview
 
 ```bash
 tf-novell preview --scene 2
 ```
+Shows the chosen scene in your terminal.
 
-показывает выбранную сцену в терминале.
-
-### ▶️ Запуск новеллы
+### ▶️ Run the Novel
 
 ```bash
 tf-novell run folder . --from 1
@@ -256,32 +249,30 @@ tf-novell run folder . --from 1
 
 ## 🛠 Scene-IDE
 
-Мини-редактор для быстрого создания/редактирования сцен:
+Mini-editor for quick scene editing/creation:
 
 ```bash
 scene-ide
 ```
-
-* редактирование `.json` с диалогами
-* визуальное указание путей к фонам, музыке и скриптам
-* сохраняет файлы в нужную папку
-
----
-
-## 💡 Советы
-
-* Всегда используй **относительные пути**
-* Проверяй **UTF-8 кодировку** JSON-файлов
-* Прогоняй `validate` перед запуском
-* Не перебарщивай с ASCII — могут тормозить терминал 😅
+* Edits `.json` dialogue files
+* Visual path selection for backgrounds, music, and scripts
+* Saves files in the required folder
 
 ---
 
-## 📦 Сборка новеллы
+## 💡 Tips
+* _Always use_ *relative paths*  
+* _Check_ *UTF-8 encoding* in your JSON scene files
+* Run `validate` before running the novel
+* Don’t overuse ASCII art—terminals can lag 😅
 
-(в будущем) планируется возможность сборки `.nvlpkg` архива для распространения новеллы.
+---
+
+## 📦 Novel Packaging
+
+(Coming soon) Ability to build a `.nvlpkg` archive to distribute your novel.
 
 ---
 
 # FIXME:
-Если вы используете скрипт на одной сцене, то он будет использоватся на каждой, пока modify_scene или post_scene не будут перезаписаны.
+If you use a script in one scene, it will persist for subsequent scenes until modify_scene or post_scene is overridden by new script files.
